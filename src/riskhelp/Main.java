@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import com.mongodb.Block;
@@ -27,6 +28,13 @@ public class Main {
 
 	public static final String ACCOUNT_SID = "";
 	public static final String AUTH_TOKEN = "";	
+	
+	static MongoClientOptions options = MongoClientOptions.builder()
+															.socketKeepAlive(true)
+															.socketTimeout(30000)
+															.build();
+	static MongoClient mongoClient = new MongoClient("localhost", options);
+	static MongoDatabase db = mongoClient.getDatabase("riskhelp");
 
 	public static void main(String [] args) throws IOException{
 		//infinite while loop to make the application run indefinitely
@@ -43,8 +51,6 @@ public class Main {
 
 	private static void checkAllGames() throws IOException{
 		// ***** begin creating arraylist of gameNumber *****
-		MongoClient mongoClient = new MongoClient();
-		MongoDatabase db = mongoClient.getDatabase("riskhelp");
 		FindIterable<Document> iterable = db.getCollection("games").find(
 				new Document("status", "active"));
 		ArrayList<String> list = new ArrayList<String>();
@@ -119,8 +125,6 @@ public class Main {
 	 * Effects: returns the phone number of username*/
 	private static String getNumber(String username) {
 		// ***** begin searching for number *****
-		MongoClient mongoClient = new MongoClient();
-		MongoDatabase db = mongoClient.getDatabase("riskhelp");
 		FindIterable<Document> iterable = db.getCollection("phoneNumbers").find(
 				new Document("username", username));
 		ArrayList<String> list = new ArrayList<String>();
@@ -143,8 +147,6 @@ public class Main {
 	 * Effects: returns the lastPlayer stored in gameNumber*/
 	private static String getLastPlayer(String gameNumber){
 		// ***** begin searching for lastPlayer *****
-		MongoClient mongoClient = new MongoClient();
-		MongoDatabase db = mongoClient.getDatabase("riskhelp");
 		FindIterable<Document> iterable = db.getCollection("games").find(
 				new Document("gameNumber", gameNumber));
 		ArrayList<String> list = new ArrayList<String>();
@@ -162,16 +164,12 @@ public class Main {
 	/* Requires: None
 	 * Effects: sets lastPlayer in database */
 	private static void setLastPlayer(String gameNumber, String playerName) {
-		MongoClient mongoClient = new MongoClient();
-		MongoDatabase db = mongoClient.getDatabase("riskhelp");
 		db.getCollection("games").updateOne(new Document("gameNumber", gameNumber),
 				new Document("$set", new Document("lastPlayer", playerName)));
 	}
 	
 	//sets game number to inactive when the game is over
 	private static void setGameInactive(String gameNumber) {
-		MongoClient mongoClient = new MongoClient();
-		MongoDatabase db = mongoClient.getDatabase("riskhelp");
 		db.getCollection("games").updateOne(new Document("gameNumber", gameNumber),
 				new Document("$set", new Document("status", "inactive")));
 	}
